@@ -4,6 +4,13 @@ import Mime from 'mime';
 
 import { BadRequestError } from '../utils/errors';
 
+const defaultProps = {
+    name: '',
+    about: '',
+    email: '',
+    birthdate: '',
+    acceptTerms: false,
+};
 export default class UploadService {
     static config(cfg) {
         return new UploadService(
@@ -46,6 +53,7 @@ export default class UploadService {
     async add(item) {
         const now = new Date().toISOString();
         return await this._repository.put({
+            ...defaultProps,
             ...item,
             id: uuid(),
             createdAt: now,
