@@ -1,8 +1,8 @@
 import DynamoClient from '../utils/dynamoClient';
 
-export default class ActionPlanRepository {
+export default class Repository {
     static config(cfg) {
-        return new ActionPlanRepository(
+        return new Repository(
             new DynamoClient({debug: cfg.debug}),
             cfg.dynamoDbUploadTable,
 
