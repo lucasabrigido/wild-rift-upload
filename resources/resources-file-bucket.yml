@@ -1,0 +1,38 @@
+service:
+  name: wild-rift-resources-file-bucket
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: v2
+
+resources:
+  Resources:
+    FileBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${opt:cfg}-wild-rift-resources-file-bucket
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - HEAD
+              MaxAge: 3000
+  Outputs:
+    FileBucketName:
+      Value: !Ref FileBucket
+      Export:
+        Name: WildRiftUploadFileBucketName
+    FileBucketArn:
+      Value:
+        Fn::GetAtt:
+          - FileBucket
+          - Arn
+      Export:
+        Name: WildRiftUploadFileBucketArn
