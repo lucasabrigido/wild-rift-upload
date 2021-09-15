@@ -2,6 +2,7 @@ import AWS from 'aws-sdk';
 import {v4 as uuid} from 'uuid';
 import Mime from 'mime';
 
+import Repository from './repository';
 import { BadRequestError } from '../utils/errors';
 
 const defaultProps = {
@@ -19,6 +20,7 @@ export default class UploadService {
             'wild-rift',
             cfg.BASE_API_URL,
             cfg.expires,
+            Repository.config(cfg),
         );
     }
 
@@ -61,11 +63,12 @@ export default class UploadService {
         });
     }
 
-    constructor(s3, bucket, folder, baseUrl, expires = 180) {
+    constructor(s3, bucket, folder, baseUrl, expires = 180, repository) {
         this._s3 = s3;
         this._bucket = bucket;
         this._folder = folder;
         this._baseUrl = baseUrl;
         this._expires = expires;
+        this._repository = repository;
     }
 }

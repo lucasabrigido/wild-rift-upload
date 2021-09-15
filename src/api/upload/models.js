@@ -16,7 +16,7 @@ export const Photos = Joi.object().keys({
 export const SchemaUploadSave = Joi.object().keys({
     name: Joi.string().trim().required(),
     birthdate: Joi.string().required(),
-    about: Joi.string().allow(null, undefined, '').optional(),
+    about: Joi.string().allow(null, '').optional(),
     email: Joi.string().trim().required(),
     photos: Joi.array().items(Photos).min(1).required(),
     acceptTerms: Joi.boolean().required(),
