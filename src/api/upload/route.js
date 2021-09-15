@@ -1,7 +1,7 @@
 import express from 'express';
 import {OK, MOVED_TEMPORARILY} from 'http-status-codes';
 
-import {SchemaCreateUpload} from './models';
+import {SchemaCreateUpload, SchemaUploadSave} from './models';
 import Service from './service';
 import config from '../config';
 import validation from '../middlewares/validation';
@@ -9,7 +9,7 @@ import validation from '../middlewares/validation';
 const router = express.Router();
 export const routerFile = express.Router();
 
-router.post('/save', validation(SchemaCreateUpload), async(req, res) => {
+router.post('/save', validation(SchemaUploadSave), async(req, res) => {
     res.status(OK).send(await service.add(req.body));
 });
 

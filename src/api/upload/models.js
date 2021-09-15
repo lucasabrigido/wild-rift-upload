@@ -6,18 +6,20 @@ export const SchemaCreateUpload = Joi.object().keys({
     name: Joi.string().trim().optional(),
 });
 
-export const SchemaUploadSave = Joi.object().keys({
-    name: Joi.string().trim().required(),
-    age: Joi.string().required(),
-    about: Joi.string().trim().optional(),
-    email: Joi.string().trim().required(),
-    photos: Joi.array(Photos).min(1).required(),
-    acceptTerms: Joi.boolean().required(),
-});
-
 export const Photos = Joi.object().keys({
     name: Joi.string().required(),
     status: Joi.string().required(),
+    mime: Joi.string().valid(...mimes).required(),
+    url: Joi.string().required(),
+});
+
+export const SchemaUploadSave = Joi.object().keys({
+    name: Joi.string().trim().required(),
+    birthdate: Joi.string().required(),
+    about: Joi.string().trim().optional(),
+    email: Joi.string().trim().required(),
+    photos: Joi.array().items(Photos).min(1).required(),
+    acceptTerms: Joi.boolean().required(),
 });
 
 /**

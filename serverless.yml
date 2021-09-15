@@ -87,6 +87,10 @@ functions:
     handler: src/bin/api.handler
     events:
       - http:
+          path: ${self:custom.pathPattern}/upload/{proxy+}
+          method: ANY
+          cors: true
+      - http:
           path: ${self:custom.pathPattern}/upload
           method: ANY
           cors: true
