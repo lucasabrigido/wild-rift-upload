@@ -1,0 +1,7 @@
+{
+    "printWidth": 180,
+    "tabWidth": 4,
+    "singleQuote": true,
+    "wordWrapColumn": 180,
+    "trailingComma": "es5"
+}

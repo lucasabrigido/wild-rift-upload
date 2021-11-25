@@ -1,0 +1,34 @@
+service: wild-rift-resources
+
+custom:
+  table: 'WildRift_Upload'
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: v2
+
+resources:
+  Resources:
+    TableDynamoDBTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.table}
+  Outputs:
+    TableDynamoTableArn:
+      Value:
+        Fn::GetAtt:
+          - TableDynamoDBTable
+          - Arn
+      Export:
+        Name: WildRiftUploadTableDynamoTableArn
+    TableDynamoTableName:
+      Value: ${self:custom.table}
+      Export:
+        Name: WildRiftUploadTableDynamoTableName

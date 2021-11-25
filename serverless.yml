@@ -1,0 +1,130 @@
+service:
+  name: wild-rift-upload
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-plugin-git-variables
+  - serverless-plugin-aws-alerts
+
+custom:
+  webpack:
+    packager: 'yarn'
+  gitVariablesEnvWhitelist: []
+  gitVariablesTagsWhitelist: ['GIT_REPOSITORY', 'GIT_COMMIT_LONG', 'GIT_BRANCH', 'GIT_IS_DIRTY']
+  pathPattern: 'wild-rift-upload'
+  layerFile: layer.node_modules.zip
+  DatabaseName: ${opt:cfg}_wild-rift-upload
+  dev:
+    EXPIRES: 900
+    DEBUG: true
+  alpha:
+    EXPIRES: 900
+    DEBUG: true
+  prod:
+    EXPIRES: 900
+    DEBUG: false
+  alerts:
+    alarms:
+      - functionErrors
+
+
+package:
+  individually: true 
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: v2
+  memorySize: 256
+  timeout: 30
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:PutObject
+      Resource:
+        !Join ['', ['arn:aws:s3:::', !ImportValue WildRiftUploadFileBucketName, '/*']]
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "*"
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+      Resource:
+        - 'Fn::ImportValue': WildRiftUploadTableDynamoTableArn
+  environment:
+    STAGE: ${opt:cfg}
+    DEBUG: ${self:custom.${opt:cfg}.DEBUG}
+    SERVICE_NAME: ${self:service.name}-${self:provider.stage}
+    DYNAMODB_TABLE_UPLOAD_PLAN: !ImportValue WildRiftUploadTableDynamoTableName
+    WILD_RIFT_UPLOAD_BUCKET_NAME: !ImportValue WildRiftUploadFileBucketName
+    WILD_RIFT_UPLOAD_BUCKET_ARN: !ImportValue WildRiftUploadFileBucketArn
+    EXPIRES: ${self:custom.${opt:cfg}.EXPIRES}
+
+  Outputs:
+    ServiceEndpointExport:
+      Value:
+          Fn::Join:
+              [
+                  "",
+                  [
+                      !Ref ApiGatewayRestApi,
+                      ".execute-api.",
+                      !Ref "AWS::Region",
+                      ".amazonaws.com/",
+                      "${self:provider.stage}",
+                  ],
+              ]
+      Export:
+          Name: "${self:service}-endpoint"
+
+functions:
+  api-upload:
+    handler: src/bin/api.handler
+    events:
+      - http:
+          path: ${self:custom.pathPattern}/upload/{proxy+}
+          method: ANY
+          cors: true
+      - http:
+          path: ${self:custom.pathPattern}/upload
+          method: ANY
+          cors: true
+    environment:
+      BASE_API_URL: !Join ['', ['https://', !Ref ApiGatewayRestApi, '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com']]
+    layers:
+      - { Ref: UploadCommonLibsLambdaLayer }
+  api-file:
+    handler: src/bin/api.handler
+    events:
+      - http:
+          path: ${self:custom.pathPattern}/file/{proxy+}
+          method: ANY
+          cors: true
+    environment:
+      BASE_API_URL: !Join ['', ['https://', !Ref ApiGatewayRestApi, '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com']]
+    layers:
+      - { Ref: UploadCommonLibsLambdaLayer }
+  api-docs:
+    handler: src/bin/api.handler
+    events:
+      - http:
+          path: ${self:custom.pathPattern}/docs/{proxy+}
+          method: ANY
+          cors: true
+      - http:
+          path: ${self:custom.pathPattern}/docs
+          method: ANY
+          cors: true
+    layers:
+      - { Ref: UploadCommonLibsLambdaLayer }
+layers:
+  uploadCommonLibs:
+    package:
+        artifact: ${self:custom.layerFile}
+    compatibleRuntimes:
+      - nodejs14.x
